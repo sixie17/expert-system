@@ -10,9 +10,7 @@ For example, when multiple rules share common antecedents or consequences, evalu
 
 ## Approach
 
-This project abandons the pure linear or recursive tree evaluation in favor of an **e-graph / hypergraph** representation.
-
-- **E-graph (Equivalence Graph):** Groups equivalent logical expressions together. If `(A & B) <=> C`, they become part of the same equivalence class in the graph.
+This project abandons the pure linear or recursive tree evaluation in favor of a **hypergraph** representation.
 - **Hypergraph:** Captures the complex logical relationships—where multiple facts combine to satisfy a single condition, or where one rule branch depends on multiple other independent rules.
 - **Shared Substructure:** Common sub-expressions (like `A & B`) are stored as single nodes. The system reuses the evaluation of this node across all rules that depend on it.
 
