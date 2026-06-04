@@ -3,19 +3,21 @@ CXX         = c++
 CXXFLAGS    = -std=c++20 -Wall -Wextra -Werror -Iinclude -MMD -MP
 
 SRCS        = src/main.cpp \
-              src/ast/ASTNode.cpp \
-              src/ast/ASTVisitor.cpp \
-              src/parser/Lexer.cpp \
-              src/parser/Parser.cpp \
-              src/hypergraph/HypergraphOps.cpp \
-              src/hypergraph/HyperEdge.cpp \
-              src/kb/KnowledgeBaseBuilder.cpp \
-              src/inference/ExpressionParser.cpp \
-              src/inference/InferenceEngine.cpp \
-              src/observer/AuditLogger.cpp \
-              src/observer/StateTracker.cpp \
-              src/cache/CacheManager.cpp \
-              src/cache/Serializer.cpp
+              src/ast/AtomicNode.cpp \
+              src/ast/OpNode.cpp \
+              src/ast/ASTVisitor.cpp 
+              # uncomment when implemented
+#               src/parser/Lexer.cpp \
+#               src/parser/Parser.cpp \
+#               src/hypergraph/HypergraphOps.cpp \
+#               src/hypergraph/HyperEdge.cpp \
+#               src/kb/KnowledgeBaseBuilder.cpp \
+#               src/inference/ExpressionParser.cpp \
+#               src/inference/InferenceEngine.cpp \
+#               src/observer/AuditLogger.cpp \
+#               src/observer/StateTracker.cpp \
+#               src/cache/CacheManager.cpp \
+#               src/cache/Serializer.cpp
 
 # Simple substitution instead of shell/patsubst
 OBJS        = $(SRCS:src/%.cpp=build/%.o)
@@ -26,7 +28,7 @@ all: $(NAME)
 $(NAME): $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJS)
 
-build/%.o: src/%.cpp
+build: $(OBJS)
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
