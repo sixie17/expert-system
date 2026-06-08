@@ -10,6 +10,6 @@ OpType AtomicNode::getType() const {
     return this->operation;
 }
 
-void AtomicNode::accept(IASTVisitor &visitor) {
+void AtomicNode::accept(ASTVisitor &visitor) {
     visitor.visit(*this);
 }

@@ -1,6 +1,6 @@
 #pragma once
 #include "IASTNode.hpp"
-#include "IASTVisitor.hpp"
+#include "ASTVisitor.hpp"
 
 /**
  * @brief Represents a logical operation in the Abstract Syntax Tree.
@@ -80,7 +80,7 @@ class OpNode : public IASTNode {
          * @brief Accepts a visitor to evaluate or process this logical operation.
          * @param visitor The visitor being accepted.
          */
-        void accept(IASTVisitor &visitor) override;
+        void accept(ASTVisitor &visitor) override;
 
 };
 

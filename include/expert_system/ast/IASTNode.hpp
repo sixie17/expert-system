@@ -3,7 +3,7 @@
 #include <iostream>
 #include <memory>
 
-class IASTVisitor;
+class ASTVisitor;
 
 /**
  * @brief Represents the types of operations and symbols in the AST.
@@ -34,6 +34,6 @@ class IASTNode {
          * @brief Accepts a visitor to perform an operation on this node (Double Dispatch).
          * @param visitor The visitor executing logic on the AST.
          */
-        virtual void accept(IASTVisitor &visitor) = 0;
+        virtual void accept(ASTVisitor &visitor) = 0;
 
 };

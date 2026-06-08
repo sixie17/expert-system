@@ -1,29 +1,37 @@
 #pragma once
+#include <string>
 class AtomicNode;
 class OpNode; // all other nodes will have left and right
 
 /**
- * @brief Interface for the standard Visitor pattern on the AST.
+ * @brief class for the standard Visitor pattern on the AST.
  * 
- * Implement this interface to define operations (like evaluation or printing)
+ * Implement this class to define operations (like evaluation or printing)
  * that traverse through the Abstract Syntax Tree.
  */
-class IASTVisitor {
+class ASTVisitor {
+    private:
+        std::string prefix = "";
+        bool isLast = true;
+        bool isRoot = true;
     public:
+
+        
         /**
          * @brief Virtual destructor.
          */
-        virtual ~IASTVisitor() = default;
+
+        virtual ~ASTVisitor() = default;
 
         /**
          * @brief Visits an AtomicNode.
          * @param node The atomic node being visited.
          */
-        virtual void visit(AtomicNode &node) = 0;
+        void visit(AtomicNode &node);
 
         /**
          * @brief Visits an Operation node (e.g., AND, OR).
          * @param node The operation node being visited.
          */
-        virtual void visit(OpNode &node) = 0;
+        virtual void visit(OpNode &node);
 };

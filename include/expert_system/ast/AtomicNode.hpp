@@ -1,6 +1,6 @@
 #pragma once
 #include "IASTNode.hpp"
-#include "IASTVisitor.hpp"
+#include "ASTVisitor.hpp"
 
 /**
  * @brief Represents an atomic fact or proposition in the knowledge base.
@@ -41,5 +41,5 @@ class AtomicNode : public IASTNode {
          * @brief Accepts a visitor for processing this node's atomic logic.
          * @param visitor The visitor being accepted.
          */
-        void accept(IASTVisitor &visitor) override;
+        void accept(ASTVisitor &visitor) override;
 };

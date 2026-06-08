@@ -1,11 +1,11 @@
 NAME        = build/expert_system
-CXX         = c++
+CXX         = g++
 CXXFLAGS    = -std=c++20 -Wall -Wextra -Werror -Iinclude -MMD -MP
 
 SRCS        = src/main.cpp \
               src/ast/AtomicNode.cpp \
               src/ast/OpNode.cpp \
-              src/ast/ASTVisitor.cpp 
+              src/ast/ASTVisitor.cpp
               # uncomment when implemented
 #               src/parser/Lexer.cpp \
 #               src/parser/Parser.cpp \
@@ -28,12 +28,15 @@ all: $(NAME)
 $(NAME): $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJS)
 
-build: $(OBJS)
+build/%.o: src/%.cpp
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
 	rm -rf $(OBJS) $(DEPS)
+
+run: $(OBJS)
+	./build/expert_system
 
 fclean: clean
 	rm -f $(NAME)

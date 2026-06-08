@@ -40,6 +40,6 @@ void OpNode::unsetRightNode() {
     this->rightNode.reset();
 }
 
-void OpNode::accept(IASTVisitor &visitor) {
+void OpNode::accept(ASTVisitor &visitor) {
     visitor.visit(*this);
 }
