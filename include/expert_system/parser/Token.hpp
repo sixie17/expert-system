@@ -20,7 +20,7 @@ enum class TokenType {
     AND,           // +
     OR,            // |
     XOR,           // ^
-    NOT,           // !
+    NOT,           // !:
     IMPLIES,       // =>
     IFAOF,         // <=>
     LPAREN,        // (

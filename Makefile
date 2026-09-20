@@ -1,6 +1,6 @@
 NAME        = build/expert_system
 CXX         = g++
-CXXFLAGS    = -std=c++20 -Wall -Wextra -Werror -Iinclude -MMD -MP
+CXXFLAGS    = -std=c++20 -Wall -Wextra -Werror -Iinclude -MMD -MP -g -fsanitize=address
 
 SRCS        = src/main.cpp \
               src/ast/AtomicNode.cpp \

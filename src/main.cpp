@@ -2,10 +2,112 @@
 #include <memory>
 #include <fstream>
 #include <vector>
+#include <stack>
+#include <optional>
+#include "expert_system/exceptions/Exceptions.hpp"
 #include "expert_system/ast/AtomicNode.hpp"
 #include "expert_system/ast/OpNode.hpp"
 #include "expert_system/ast/ASTVisitor.hpp"
 #include "expert_system/parser/Lexer.hpp"
+#include "expert_system/ast/IASTNode.hpp"
+#include "expert_system/ast/OpNode.hpp"
+
+
+
+/**
+ * @brief needed during parsing after tokenization 
+ * */
+
+
+bool isOpToken(const Token &token) {
+  auto tokenType = token.type;
+  return tokenType != TokenType::VARIABLE &&
+          tokenType != TokenType::NOT &&
+          tokenType != TokenType::END_OF_LINE; 
+}
+
+/**
+ * @breif: needed during parsing to check if an AST node is an op node
+ *
+ * */
+
+bool isOpNode(const std::unique_ptr<IASTNode>& node) {
+  auto opType = node->getType();
+  return opType != OpType::ATOMIC && opType != OpType::NOT;
+}
+
+
+// Hardcoded compile-time mapping function
+constexpr std::optional<OpType> tokenToOp(TokenType token) {
+    switch (token) {
+        case TokenType::VARIABLE: return OpType::ATOMIC;
+        case TokenType::AND:      return OpType::AND;
+        case TokenType::OR:       return OpType::OR;
+        case TokenType::XOR:      return OpType::XOR;
+        case TokenType::NOT:      return OpType::NOT;
+        case TokenType::IMPLIES:  return OpType::IMPLIES;
+        case TokenType::IFAOF:    return OpType::IFaoF;
+        
+        // These tokens do not map to an operator
+        default:                  return std::nullopt; 
+    }
+}
+
+
+// tokenize each line individually
+// each line = 1 AST
+// each ATOMIC stack is pushed directly
+// kind of like RPN
+// e.g A => B
+// A finds stack empty so it is pushed in the stack directly
+// => pops from stack, setLeftNode(A) and pushed back to
+// B finds OpNode inside stack, calls setLeftRightNode(B) and pushed Back to th stack, 
+// ANOTHER CASE
+// A AND (B OR C)
+std::unique_ptr<IASTNode> parseLine(std::string line) {
+  auto lexer = std::make_unique<Lexer>(line);
+  std::vector<Token> tokens = lexer->tokenize();
+
+  std::stack<std::unique_ptr<IASTNode>> nodeStack;
+  for (const auto& token : tokens) {
+    // Build AST
+    if (token.type == TokenType::VARIABLE)
+    {
+      if (!nodeStack.empty()) {
+        if (isOpNode(nodeStack.top()))
+          dynamic_cast<OpNode*>(nodeStack.top().get())->setRightNode(
+              std::make_unique<AtomicNode>(token.value)
+          );
+        else
+            throw new MissingOperation("parseLine", "Left");
+      }
+      else {
+        nodeStack.push(std::make_unique<AtomicNode>(token.value));
+      }
+      continue;
+    }
+    else if (isOpToken(token))
+    {
+      if (nodeStack.empty())
+        throw new MissingOperationValue("parseLine");
+      auto leftNode = std::move(nodeStack.top());
+      nodeStack.pop();
+      auto opTypeOpt = tokenToOp(token.type);
+      if (!opTypeOpt.has_value()) {
+        throw std::runtime_error("Unexpected token type: expected an operator.");
+      }
+
+      // Extract the raw value safely using value() or *
+      auto currentNode = std::make_unique<OpNode>(token.value, opTypeOpt.value());
+      currentNode->setLeftNode(std::move(leftNode));
+      nodeStack.push(std::move(currentNode));
+      continue;
+    }
+  }
+
+  return nodeStack.empty() ? NULL : std::move(nodeStack.top());
+}
+
 
 int main() {
     // std::cout << "--- Building the AST ---" << std::endl;
@@ -52,14 +154,15 @@ int main() {
         lines.push_back(line);
     }
     // std::cout << text << std::endl;
-
     for (const auto& line : lines) {
-        auto lexer = std::make_unique<Lexer>(line);
-        std::vector<Token> tokens = lexer->tokenize();
-        for (const auto& token : tokens) {
-            std::cout << token.value << " ";
-        }
-        std::cout << std::endl;
+        std::cout<<"parsing line ..."<<std::endl;
+        std::cout<<line<<std::endl;
+        auto node = parseLine(line);
+        if (!node)
+          continue ;
+        ASTVisitor visitor;
+        node->accept(visitor);
+        std::cout <<std::endl;
     }
 
     // 4. Close the file
