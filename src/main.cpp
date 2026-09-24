@@ -1,9 +1,11 @@
 #include <iostream>
 #include <memory>
-#include <fstream>
+#include <algorithm>
 #include <vector>
 #include <stack>
 #include <optional>
+#include <fstream>
+
 #include "expert_system/exceptions/Exceptions.hpp"
 #include "expert_system/ast/AtomicNode.hpp"
 #include "expert_system/ast/OpNode.hpp"
@@ -23,7 +25,9 @@ bool isOpToken(const Token &token) {
   auto tokenType = token.type;
   return tokenType != TokenType::VARIABLE &&
           tokenType != TokenType::NOT &&
-          tokenType != TokenType::END_OF_LINE; 
+          tokenType != TokenType::END_OF_LINE &&
+          tokenType != TokenType::LPAREN &&
+          tokenType != TokenType::RPAREN; 
 }
 
 /**
@@ -54,32 +58,27 @@ constexpr std::optional<OpType> tokenToOp(TokenType token) {
 }
 
 
-// tokenize each line individually
-// each line = 1 AST
-// each ATOMIC stack is pushed directly
-// kind of like RPN
-// e.g A => B
-// A finds stack empty so it is pushed in the stack directly
-// => pops from stack, setLeftNode(A) and pushed back to
-// B finds OpNode inside stack, calls setLeftRightNode(B) and pushed Back to th stack, 
-// ANOTHER CASE
-// A AND (B OR C)
-std::unique_ptr<IASTNode> parseLine(std::string line) {
-  auto lexer = std::make_unique<Lexer>(line);
-  std::vector<Token> tokens = lexer->tokenize();
-
+std::unique_ptr<IASTNode> parseTokens(std::vector<Token> tokens) {
   std::stack<std::unique_ptr<IASTNode>> nodeStack;
-  for (const auto& token : tokens) {
+
+  for (auto it = tokens.begin(); it != tokens.end(); it++) {
+    auto token = *it;
     // Build AST
     if (token.type == TokenType::VARIABLE)
     {
       if (!nodeStack.empty()) {
-        if (isOpNode(nodeStack.top()))
-          dynamic_cast<OpNode*>(nodeStack.top().get())->setRightNode(
+        if (isOpNode(nodeStack.top())) {
+          auto opNode = dynamic_cast<OpNode*>(nodeStack.top().get());
+          if (opNode->getRightNode()) {
+            throw  MissingOperation("parseLine", "Right"); 
+          }
+          opNode->setRightNode(
               std::make_unique<AtomicNode>(token.value)
           );
+        }
+          
         else
-            throw new MissingOperation("parseLine", "Left");
+            throw  MissingOperation("parseLine", "Left");
       }
       else {
         nodeStack.push(std::make_unique<AtomicNode>(token.value));
@@ -89,7 +88,7 @@ std::unique_ptr<IASTNode> parseLine(std::string line) {
     else if (isOpToken(token))
     {
       if (nodeStack.empty())
-        throw new MissingOperationValue("parseLine");
+        throw  MissingOperationValue("parseLine");
       auto leftNode = std::move(nodeStack.top());
       nodeStack.pop();
       auto opTypeOpt = tokenToOp(token.type);
@@ -103,10 +102,60 @@ std::unique_ptr<IASTNode> parseLine(std::string line) {
       nodeStack.push(std::move(currentNode));
       continue;
     }
+
+    //what is inside parantheses is processed recursively
+    else if (token.type == TokenType::LPAREN) {
+      //find closed parenthesis
+      auto rParen = std::find_if(it + 1, tokens.end(), [](Token token) {
+          return token.type == TokenType::RPAREN;
+      });
+      if (it == tokens.end())
+          throw  UnclosedParenthese("parseLine");
+      auto subTokens = std::ranges::subrange(it + 1, rParen);
+      std::vector<Token> subVector(subTokens.begin(), subTokens.end());
+      auto node = parseTokens(subVector);
+      if (!nodeStack.empty()) {
+        if (isOpNode(nodeStack.top())) {
+          auto opNode = dynamic_cast<OpNode*>(nodeStack.top().get());
+          if (opNode->getRightNode())
+            throw  MissingOperation("ParseLine", "Right");
+          opNode->setRightNode(std::move(node));
+        }
+        else
+            throw  MissingOperation("parseLine", "Left");         
+      }
+      else {
+        nodeStack.push(std::move(node));
+      }
+
+      it = rParen;
+
+    }
+
+
   }
 
-  return nodeStack.empty() ? NULL : std::move(nodeStack.top());
+  return nodeStack.empty() ? nullptr : std::move(nodeStack.top());
 }
+
+
+// tokenize each line individually
+// each line = 1 AST
+// each ATOMIC stack is pushed directly
+// kind of like RPN
+// e.g A => B
+// A finds stack empty so it is pushed in the stack directly
+// => pops from stack, setLeftNode(A) and pushed back to
+// B finds OpNode inside stack, calls setLeftRightNode(B) and pushed Back to th stack, 
+// ANOTHER CASE
+// A AND (B OR C)
+std::unique_ptr<IASTNode> parseLine(std::string line) {
+  auto lexer = std::make_unique<Lexer>(line);
+  std::vector<Token> tokens = lexer->tokenize();
+  return parseTokens(tokens);
+}
+
+
 
 
 int main() {
@@ -157,12 +206,16 @@ int main() {
     for (const auto& line : lines) {
         std::cout<<"parsing line ..."<<std::endl;
         std::cout<<line<<std::endl;
-        auto node = parseLine(line);
-        if (!node)
-          continue ;
-        ASTVisitor visitor;
-        node->accept(visitor);
-        std::cout <<std::endl;
+        try {
+          auto node = parseLine(line);
+          if (!node)
+            continue ;
+          ASTVisitor visitor;
+          node->accept(visitor);
+          std::cout <<std::endl;
+        } catch (std::exception& error) {
+          std::cerr<< error.what()<<std::endl;
+        }
     }
 
     // 4. Close the file
