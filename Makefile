@@ -24,6 +24,11 @@ SRCS        = src/main.cpp \
 OBJS        = $(SRCS:src/%.cpp=build/%.o)
 DEPS        = $(OBJS:.o=.d)
 
+# every tests/test*.cpp is its own executable, linked with everything but main
+TEST_SRCS   = $(wildcard tests/test*.cpp)
+TEST_BINS   = $(TEST_SRCS:tests/%.cpp=build/tests/%)
+TEST_OBJS   = $(filter-out build/main.o, $(OBJS))
+
 all: $(NAME)
 
 $(NAME): $(OBJS)
@@ -33,8 +38,16 @@ build/%.o: src/%.cpp
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+build/tests/%: tests/%.cpp $(TEST_OBJS)
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) -o $@ $< $(TEST_OBJS)
+
+# runs every test executable, fails if any of them fails
+test: $(TEST_BINS)
+	@status=0; for t in $(TEST_BINS); do ./$$t || status=1; done; exit $$status
+
 clean:
-	rm -rf $(OBJS) $(DEPS)
+	rm -rf $(OBJS) $(DEPS) build/tests
 
 run: $(OBJS)
 	./build/expert_system
@@ -45,6 +58,6 @@ fclean: clean
 
 re: fclean all
 
--include $(DEPS)
+-include $(DEPS) $(TEST_BINS:=.d)
 
-.PHONY: all clean fclean re
+.PHONY: all clean fclean re test

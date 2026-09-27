@@ -72,7 +72,7 @@ class InvalidLogicOperation: public std::exception {
 
   public:
     ~InvalidLogicOperation() = default;
-    InvalidLogicOperation(std::string method) : method(method), full_message(method + "InvalidLogicOperation: => and <=> must appear once, outside parentheses and not after !") {}
+    InvalidLogicOperation(std::string method) : method(method), full_message(method + "InvalidLogicOperation: chained => and <=> must be parenthesized e.g A => (B => C)") {}
 
     const char* what() const noexcept override {
       return this->full_message.c_str();

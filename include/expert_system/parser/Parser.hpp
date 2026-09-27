@@ -67,11 +67,12 @@ class Parser {
 
         /**
          * @brief Parses a range of tokens into an AST.
-         * @param nested True inside parentheses or on either side of =>/<=>,
-         * where a logic operation (=>, <=>) is not allowed.
-         * @throws InvalidLogicOperation if a logic operation appears while nested.
+         * @param allowLogicOp False on the right side of an unparenthesized
+         * =>/<=>, where a second one would be ambiguous (A => B => C).
+         * Parentheses start a new level where it is allowed again.
+         * @throws InvalidLogicOperation if a logic operation appears while not allowed.
          */
-        static std::unique_ptr<IASTNode> parseTokens(std::span<const Token> tokens, bool nested);
+        static std::unique_ptr<IASTNode> parseTokens(std::span<const Token> tokens, bool allowLogicOp);
 
     public:
         Parser() = delete;
@@ -89,9 +90,11 @@ class Parser {
         /**
          * @brief Parses a range of tokens into an AST.
          *
-         * A logic operation (=>, <=>) splits the line: everything before it is
-         * the left node, everything after it the right node, so it is always
-         * the root. It may appear at most once and never inside parentheses.
+         * A logic operation (=>, <=>) splits its level: everything before it is
+         * the left node, everything after it the right node, so it is the root
+         * of that level. Each level (the line, or a parenthesized group) may
+         * have at most one, e.g (A => B) | (A => C) and A => (B => C) are valid,
+         * A => B => C is not.
          * @return The root of the AST, or nullptr if there are no tokens.
          */
         [[nodiscard]] static std::unique_ptr<IASTNode> parseTokens(std::span<const Token> tokens);

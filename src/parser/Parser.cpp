@@ -55,10 +55,6 @@ std::unique_ptr<IASTNode> Parser::parseOperand(TokenIt &it, TokenIt end) {
   if (it->type == TokenType::VARIABLE)
     return std::make_unique<AtomicNode>(it->value);
 
-  // e.g A !=> B
-  if (isLogicOperation(*it))
-    throw InvalidLogicOperation("parseOperand");
-
   if (it->type == TokenType::NOT) {
     auto notNode = std::make_unique<NotNode>();
     ++it;
@@ -79,6 +75,7 @@ std::unique_ptr<IASTNode> Parser::parseOperand(TokenIt &it, TokenIt end) {
     });
     if (rParen == end)
         throw  UnclosedParenthese("parseOperand");
+    // parentheses start a new level where => and <=> are allowed again
     auto node = parseTokens(std::span<const Token>(it + 1, rParen), true);
     if (!node)
       throw MissingOperationValue("parseOperand");
@@ -86,7 +83,7 @@ std::unique_ptr<IASTNode> Parser::parseOperand(TokenIt &it, TokenIt end) {
     return node;
   }
 
-  // operator, ')' or end of line where an operand was expected
+  // operator (e.g A !=> B), ')' or end of line where an operand was expected
   throw MissingOperationValue("parseOperand");
 }
 
@@ -106,11 +103,11 @@ void Parser::attachOperand(std::unique_ptr<IASTNode> node, NodeStack &nodeStack)
 
 
 std::unique_ptr<IASTNode> Parser::parseTokens(std::span<const Token> tokens) {
-  return parseTokens(tokens, false);
+  return parseTokens(tokens, true);
 }
 
 
-std::unique_ptr<IASTNode> Parser::parseTokens(std::span<const Token> tokens, bool nested) {
+std::unique_ptr<IASTNode> Parser::parseTokens(std::span<const Token> tokens, bool allowLogicOp) {
   NodeStack nodeStack;
 
   for (auto it = tokens.begin(); it != tokens.end(); it++) {
@@ -127,18 +124,20 @@ std::unique_ptr<IASTNode> Parser::parseTokens(std::span<const Token> tokens, boo
     }
     else if (token.type == TokenType::RPAREN)
       throw UnclosedParenthese("parseTokens");
-    // => and <=> split the line: left side is what is on the stack,
+    // => and <=> split the current level: left side is what is on the stack,
     // right side is the rest of the tokens, so the logic operation is the root
+    // of this level e.g (A => B) | (A => C)
     else if (isLogicOperation(token))
     {
-      if (nested)
+      // e.g A => B => C is ambiguous, it must be written A => (B => C)
+      if (!allowLogicOp)
         throw InvalidLogicOperation("parseTokens");
       if (nodeStack.empty())
         throw  MissingOperationValue("parseTokens");
       auto leftNode = std::move(nodeStack.top());
       if (isOpNode(leftNode) && !dynamic_cast<OpNode*>(leftNode.get())->getRightNode())
         throw  MissingOperationValue("parseTokens");
-      auto rightNode = parseTokens(std::span<const Token>(it + 1, tokens.end()), true);
+      auto rightNode = parseTokens(std::span<const Token>(it + 1, tokens.end()), false);
       if (!rightNode)
         throw  MissingOperationValue("parseTokens");
 
