@@ -1,6 +1,8 @@
 #pragma once
+#include "expert_system/ast/NotNode.hpp"
 #include <string>
 class AtomicNode;
+class NotNode; // only has right node
 class OpNode; // all other nodes will have left and right
 
 /**
@@ -34,4 +36,12 @@ class ASTVisitor {
          * @param node The operation node being visited.
          */
         virtual void visit(OpNode &node);
+
+
+        /**
+         *  @brief Visits a Not node 
+         *  @param node the Not node being visited.
+         * */
+
+        virtual void visit(NotNode &node);
 };

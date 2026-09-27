@@ -1,6 +1,7 @@
 #pragma once
 #include "IASTNode.hpp"
 #include "ASTVisitor.hpp"
+#include <memory>
 
 /**
  * @brief Represents a logical operation in the Abstract Syntax Tree.

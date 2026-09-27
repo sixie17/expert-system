@@ -1,8 +1,5 @@
 #pragma once
 
-#include <iostream>
-#include <memory>
-
 class ASTVisitor;
 
 /**
@@ -23,7 +20,7 @@ class IASTNode {
          * @brief Virtual destructor to ensure proper cleanup of derived types.
          */
         virtual ~IASTNode() = default;
-
+    
         /**
          * @brief Gets the operation type of the node.
          * @return The OpType representing this node.

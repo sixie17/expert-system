@@ -5,10 +5,11 @@ CXXFLAGS    = -std=c++20 -Wall -Wextra -Werror -Iinclude -MMD -MP -g -fsanitize=
 SRCS        = src/main.cpp \
               src/ast/AtomicNode.cpp \
               src/ast/OpNode.cpp \
+							src/ast/NotNode.cpp \
               src/ast/ASTVisitor.cpp\
-              src/parser/Lexer.cpp
+              src/parser/Lexer.cpp \
+              src/parser/Parser.cpp
               # uncomment when implemented
-#               src/parser/Parser.cpp \
 #               src/hypergraph/HypergraphOps.cpp \
 #               src/hypergraph/HyperEdge.cpp \
 #               src/kb/KnowledgeBaseBuilder.cpp \

@@ -45,3 +45,31 @@ void ASTVisitor::visit(OpNode &node) {
     // Restore the prefix for the parent node
     this->prefix = oldPrefix;
 }
+
+
+
+void ASTVisitor::visit(NotNode &node) {
+  if (!this->isRoot) {
+        std::cout << this->prefix << (this->isLast ? "└── " : "├── ");
+    }
+    
+    std::cout << node.getSymbol() << std::endl;
+
+    std::string oldPrefix = prefix;
+    if (!this->isRoot) {
+        this->prefix += (this->isLast ? "    " : "│   ");
+    }
+    this->isRoot = false;
+    IASTNode* right = node.getRightNode();
+
+    if (right) {
+        bool oldLast = isLast;
+        this->isLast = true;
+        right->accept(*this);
+        this->isLast = oldLast;
+    }
+
+    // Restore the prefix for the parent node
+    this->prefix = oldPrefix;
+
+}
