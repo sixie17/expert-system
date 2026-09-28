@@ -4,7 +4,7 @@ class ASTVisitor;
 
 /**
  * @brief Represents the types of operations and symbols in the AST.
- */
+*/
 enum class OpType {ATOMIC, AND, OR, XOR, IMPLIES, IFaoF, NOT};
 
 /**

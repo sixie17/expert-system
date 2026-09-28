@@ -98,3 +98,19 @@ class ParseError: public std::exception {
       return this->full_message.c_str();
     }
 };
+
+
+class InvalidOperation: public std::exception {
+  std::string method;
+  std::string full_message;
+  
+
+  public:
+    ~InvalidOperation() = default;
+    InvalidOperation(const std::string method): method(method), full_message(method + " InvalidOperation") {};
+
+    const char* what() const noexcept override {
+      return this->full_message.c_str();
+    }
+};
+

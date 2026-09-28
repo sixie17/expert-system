@@ -4,18 +4,11 @@
 #include "expert_system/exceptions/Exceptions.hpp"
 #include <string>
 
+NotNode::NotNode() : operation(OpType::NOT) {}
 
-NotNode::NotNode():operation(OpType::NOT) {}
+OpType NotNode::getType() const { return this->operation; }
 
-OpType NotNode::getType() const {
-  return this->operation;
-}
-
-
-IASTNode *NotNode::getRightNode() const {
-  return this->rightNode.get();
-}
-
+IASTNode *NotNode::getRightNode() const { return this->rightNode.get(); }
 
 void NotNode::setRightNode(std::unique_ptr<IASTNode> node) {
   if (!node)
@@ -23,17 +16,13 @@ void NotNode::setRightNode(std::unique_ptr<IASTNode> node) {
   this->rightNode = std::move(node);
 }
 
+void NotNode::unsetRightNode() { this->rightNode.reset(); }
 
-void NotNode::unsetRightNode() {
-  this->rightNode.reset();
+void NotNode::accept(ASTVisitor &visitor) { visitor.visit(*this); }
+
+std::string NotNode::getSymbol() const { return "!"; }
+
+std::unique_ptr<IASTNode> NotNode::releaseRightNode() {
+  return std::move(this->rightNode);
 }
 
-
-void NotNode::accept(ASTVisitor &visitor) {
-  visitor.visit(*this);
-}
-
-
-std::string NotNode::getSymbol() const {
-  return "!";
-}

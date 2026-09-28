@@ -77,6 +77,21 @@ class OpNode : public IASTNode {
          */
         void unsetRightNode();
 
+
+        /**
+         *  @brief moves ownership to the caller, which disconnects it from our node
+        */
+
+        std::unique_ptr<IASTNode> releaseRightNode();
+
+        /**
+        *  @brief moves ownership to the caller, which disconnects it from our node
+        */
+
+        std::unique_ptr<IASTNode> releaseLeftNode();
+
+
+
         /**
          * @brief Accepts a visitor to evaluate or process this logical operation.
          * @param visitor The visitor being accepted.

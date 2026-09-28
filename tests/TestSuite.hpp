@@ -18,9 +18,16 @@ class TestSuite {
         const std::string name;
         size_t passed = 0;
         size_t failed = 0;
+        const bool verbose;
 
-        void pass() {
+        void pass(const std::string &description, const std::string &details = "") {
             this->passed++;
+            if (!this->verbose)
+                return;
+            std::cout << "  PASS: " << description;
+            if (!details.empty())
+                std::cout << " -> " << details;
+            std::cout << std::endl;
         }
 
         void fail(const std::string &description, const std::string &details) {
@@ -30,7 +37,10 @@ class TestSuite {
         }
 
     public:
-        explicit TestSuite(const std::string &name) : name(name) {
+        /**
+         * @param verbose If true, passing checks are printed too, not only failures.
+         */
+        explicit TestSuite(const std::string &name, bool verbose = true) : name(name), verbose(verbose) {
             std::cout << "=== " << name << " ===" << std::endl;
         }
 
@@ -40,7 +50,7 @@ class TestSuite {
         void check(const std::string &description, bool condition,
                    const std::string &details = "condition was false") {
             if (condition)
-                pass();
+                pass(description);
             else
                 fail(description, details);
         }
@@ -51,7 +61,7 @@ class TestSuite {
         template <typename T>
         void expectEqual(const std::string &description, const T &expected, const T &actual) {
             if (expected == actual)
-                pass();
+                pass(description, toString(actual));
             else
                 fail(description, "expected: " + toString(expected) + " | actual: " + toString(actual));
         }
@@ -64,8 +74,8 @@ class TestSuite {
             try {
                 fn();
                 fail(description, "expected an exception, nothing was thrown");
-            } catch (const E &) {
-                pass();
+            } catch (const E &error) {
+                pass(description, std::string("threw: ") + error.what());
             } catch (const std::exception &error) {
                 fail(description, std::string("wrong exception thrown: ") + error.what());
             }
@@ -77,7 +87,7 @@ class TestSuite {
         void expectNoThrow(const std::string &description, const std::function<void()> &fn) {
             try {
                 fn();
-                pass();
+                pass(description);
             } catch (const std::exception &error) {
                 fail(description, std::string("unexpected exception: ") + error.what());
             }

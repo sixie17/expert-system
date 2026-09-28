@@ -6,7 +6,7 @@
 #include "expert_system/ast/ASTVisitor.hpp"
 #include "expert_system/ast/IASTNode.hpp"
 #include "expert_system/parser/Parser.hpp"
-
+#include "expert_system/parser/Reducer.hpp"
 
 int main() {
     // std::cout << "--- Building the AST ---" << std::endl;
@@ -48,7 +48,7 @@ int main() {
 
     std::vector<std::string> lines;
     std::string line;
-    // 3. Read the file line by line
+    // 3. Read guardthe file line by line
     while (std::getline(file, line)) {
         lines.push_back(line);
     }
@@ -64,6 +64,10 @@ int main() {
           ASTVisitor visitor;
           node->accept(visitor);
           std::cout <<std::endl;
+          std::cout<<"reducing AST to:"<<std::endl;
+          auto reduced = Reducer::reduce(std::move(node));
+          ASTVisitor reducedTreeVisitor;
+          reduced->accept(reducedTreeVisitor);
         } catch (std::exception& error) {
           std::cerr<< error.what()<<std::endl;
           file.close();

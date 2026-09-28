@@ -13,10 +13,11 @@ E + F => !V # E and F implies not V$
 A + B <=> C # A and B if and only if C$
 A + B <=> !C # A and B if and only if not C$
 A + (B + C) => D
-A + (B + C) + E => D
+A + (B + C) + (E + F) => D
 A + !B => !(C | D)
 
-A + C => + C
+A + (C => D) + (C | B)
+C + !(D <=> C) + (K | !E) + !(A | (B  + C))
 #=ABG # Initial facts: A, B, and G are true. All others are false.$
 # If no facts are initially true, then a simple "=" followed$
 # by a newline is used.$

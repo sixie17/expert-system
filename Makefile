@@ -8,7 +8,8 @@ SRCS        = src/main.cpp \
 							src/ast/NotNode.cpp \
               src/ast/ASTVisitor.cpp\
               src/parser/Lexer.cpp \
-              src/parser/Parser.cpp
+              src/parser/Parser.cpp \
+              src/parser/Reducer.cpp
               # uncomment when implemented
 #               src/hypergraph/HypergraphOps.cpp \
 #               src/hypergraph/HyperEdge.cpp \

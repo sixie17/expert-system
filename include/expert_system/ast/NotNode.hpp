@@ -59,8 +59,15 @@ class NotNode : public IASTNode {
      */
     void setRightNode(std::unique_ptr<IASTNode> node);
 
+
     /**
-     *  @brief
+     *  @brief moves ownership to the caller, which disconnects it from our node
+     */
+
+    std::unique_ptr<IASTNode> releaseRightNode();
+
+    /**
+     *  @brief deletes right node entirely
      */
     void unsetRightNode();
 
